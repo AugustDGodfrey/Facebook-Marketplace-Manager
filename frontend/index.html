@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Marketplace Manager - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header-left p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #4ade80;
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-badge.offline {
+            background: #ef4444;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 18px 25px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tab:hover {
+            background: #f9fafb;
+            color: #333;
+        }
+
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card h3 {
+            color: #999;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .number {
+            color: #333;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-card.primary .number {
+            color: #667eea;
+        }
+
+        .stat-card.success .number {
+            color: #4ade80;
+        }
+
+        .stat-card.warning .number {
+            color: #fbbf24;
+        }
+
+        .stat-card.danger .number {
+            color: #ef4444;
+        }
+
+        .stat-card p {
+            color: #999;
+            font-size: 13px;
+        }
+
+        /* Listings Table */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            margin-bottom: 30px;
+        }
+
+        .table-controls {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #333;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .price {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-excellent {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-good {
+            background: #d1e7f9;
+            color: #0f3a7d;
+        }
+
+        .badge-fair {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-poor {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+
+        .badge-steal {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-good-deal {
+            background: #bfdbfe;
+            color: #1e3a8a;
+        }
+
+        .badge-fair-price {
+            background: #fcd34d;
+            color: #78350f;
+        }
+
+        .badge-overpriced {
+            background: #fecaca;
+            color: #7f1d1d;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Detail View */
+        .detail-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .detail-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .detail-panel h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .detail-item {
+            margin-bottom: 20px;
+        }
+
+        .detail-item label {
+            display: block;
+            color: #999;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-item .value {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .image-thumb {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .image-thumb:hover {
+            border-color: #667eea;
+        }
+
+        .price-breakdown {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .breakdown-row:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 2px solid #e5e7eb;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .breakdown-row label {
+            color: #666;
+        }
+
+        .breakdown-row .value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* Settings Panel */
+        .settings-grid {
+            display: grid;
+            gap: 25px;
+        }
+
+        .setting-group {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .setting-group h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .setting-item {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            flex: 1;
+        }
+
+        .setting-label .name {
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .setting-label .description {
+            color: #999;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-flex;
+            width: 50px;
+            height: 28px;
+            background: #d1d5db;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border: none;
+            flex-shrink: 0;
+        }
+
+        .toggle.active {
+            background: #4ade80;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease;
+        }
+
+        .toggle.active::after {
+            left: 24px;
+        }
+
+        input[type="number"],
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        select {
+            padding: 10px 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+        }
+
+        .input-wrapper small {
+            color: #999;
+            white-space: nowrap;
+        }
+
+        /* Message Log */
+        .message-item {
+            background: #f9fafb;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .message-item.seller {
+            border-left-color: #4ade80;
+        }
+
+        .message-item.bot {
+            border-left-color: #667eea;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .message-time {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .message-content {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-top: 50px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .detail-container {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .header-right {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+
+            .nav-tab {
+                flex: 0 1 auto;
+                padding: 12px 15px;
+                font-size: 13px;
+            }
+
+            .table-controls {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: 100%;
+                min-width: 100%;
+            }
+
+            .filter-buttons {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .detail-item {
+                margin-bottom: 15px;
+            }
+
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Alert */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border-left: 4px solid #ef4444;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 15px;
+            background: #e5e7eb;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-tab:hover {
+            background: #d1d5db;
+        }
+
+        .filter-tab.active:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <h1>📱 Facebook Marketplace Manager</h1>
+                <p>Intelligent listing tracking & automated offers</p>
+            </div>
+            <div class="header-right">
+                <span class="status-badge" id="statusBadge">🟢 Connected</span>
+            </div>
+        </header>
+
+        <!-- Alert -->
+        <div class="alert alert-warning">
+            ⚠️ <strong>Disclaimer:</strong> This tool is for personal use. Automated messaging may violate Facebook's Terms of Service. Use responsibly.
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('listings')">📋 Listings</button>
+            <button class="nav-tab" onclick="switchTab('detail')">🔍 Detail View</button>
+            <button class="nav-tab" onclick="switchTab('messages')">💬 Messages</button>
+            <button class="nav-tab" onclick="switchTab('settings')">⚙️ Settings</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="stat-card primary">
+                    <h3>Total Listings</h3>
+                    <div class="number" id="totalListings">247</div>
+                    <p>Tracked from searches</p>
+                </div>
+                <div class="stat-card success">
+                    <h3>Offers Sent</h3>
+                    <div class="number" id="offersSent">89</div>
+                    <p id="offersWeek">+12 this week</p>
+                </div>
+                <div class="stat-card warning">
+                    <h3>Reply Rate</h3>
+                    <div class="number" id="replyRate">34%</div>
+                    <p id="replyCount">30 responses</p>
+                </div>
+                <div class="stat-card primary">
+                    <h3>Avg Discount</h3>
+                    <div class="number" id="avgDiscount">22%</div>
+                    <p>Average offer reduction</p>
+                </div>
+                <div class="stat-card success">
+                    <h3>Deals Closed</h3>
+                    <div class="number" id="dealsClosed">12</div>
+                    <p id="moneySaved">$3,456 saved</p>
+                </div>
+                <div class="stat-card danger">
+                    <h3>Pending Review</h3>
+                    <div class="number" id="pendingReview">5</div>
+                    <p>Messages awaiting approval</p>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-controls">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search listings..." onkeyup="filterListings()">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="btn btn-secondary btn-small" onclick="filterByRecent()">Recent</button>
+                        <button class="btn btn-secondary btn-small" onclick="filterByValue()">High Value</button>
+                        <button class="btn btn-secondary btn-small" onclick="filterByDeals()">Deals</button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Asking Price</th>
+                            <th>Fair Value</th>
+                            <th>Condition</th>
+                            <th>Status</th>
+                            <th>Age</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listingsTableBody">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Listings Tab -->
+        <div id="listings" class="tab-content">
+            <div class="table-container">
+                <div class="table-controls">
+                    <div class="search-box">
+                        <input type="text" id="searchListingsInput" placeholder="Search by item name or ID..." onkeyup="filterAllListings()">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="btn btn-primary btn-small" onclick="startNewSearch()">New Search</button>
+                        <button class="btn btn-secondary btn-small" onclick="exportListings()">Export</button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Marketplace ID</th>
+                            <th>Title</th>
+                            <th>Seller</th>
+                            <th>Price</th>
+                            <th>Posted</th>
+                            <th>Images</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allListingsTableBody">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Detail View Tab -->
+        <div id="detail" class="tab-content">
+            <div class="detail-container">
+                <!-- Left Panel: Item Details -->
+                <div class="detail-panel">
+                    <h2>Item Details</h2>
+
+                    <div class="detail-item">
+                        <label>Item Name</label>
+                        <div class="value" id="detailItemName">iPhone 14 Pro - Space Black - 256GB</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Seller</label>
+                        <div class="value" id="detailSeller">John D. • 4.8 stars (23 reviews)</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Posted</label>
+                        <div class="value" id="detailPosted">3 days ago</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Condition Grade</label>
+                        <div class="value" id="detailConditionGrade" style="color: #10b981;"><strong>Excellent</strong></div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Condition Score</label>
+                        <div class="value" id="detailConditionScore">92/100</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Visible Damage</label>
+                        <div class="value" id="detailDamage">None detected</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Item Images</label>
+                        <div class="image-gallery" id="detailImageGallery">
+                            <div class="image-thumb">Image 1</div>
+                            <div class="image-thumb">Image 2</div>
+                            <div class="image-thumb">Image 3</div>
+                            <div class="image-thumb">Image 4</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Price Analysis & Offer -->
+                <div class="detail-panel">
+                    <h2>Price Analysis & Offer</h2>
+
+                    <div class="detail-item">
+                        <label>Market Assessment</label>
+                        <div class="value"><span class="badge badge-good-deal" id="marketAssessment">Good Deal</span></div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Market Comparables</label>
+                        <div class="value" id="comparablesCount">18 items analyzed</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Price Breakdown</label>
+                        <div class="price-breakdown">
+                            <div class="breakdown-row">
+                                <label>Asking Price</label>
+                                <span class="value" id="breakdownAskingPrice">$899.00</span>
+                            </div>
+                            <div class="breakdown-row">
+                                <label>Fair Value (Median)</label>
+                                <span class="value" id="breakdownFairValue">$750.00</span>
+                            </div>
+                            <div class="breakdown-row">
+                                <label>Tier Range</label>
+                                <span class="value" id="breakdownTierRange">58% - 67%</span>
+                            </div>
+                            <div class="breakdown-row">
+                                <label>Adjustments</label>
+                                <span class="value" id="breakdownAdjustments">-5% (Good condition)</span>
+                            </div>
+                            <div class="breakdown-row">
+                                <label>Final Offer</label>
+                                <span class="value" id="breakdownFinalOffer" style="color: #667eea;">$622.50 (62.5%)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Recommended Message</label>
+                        <div id="recommendedMessage" style="background: #f0f4ff; padding: 12px; border-radius: 8px; margin-top: 8px; font-size: 13px; color: #333; line-height: 1.6;">
+                            "Hey! Your iPhone looks like it's in excellent condition. I'm very interested and ready to pick up ASAP. Would you consider $622 for it? Let me know!"
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="sendOffer()">Send Offer</button>
+                </div>
+            </div>
+
+            <!-- Message History -->
+            <div class="detail-panel" style="margin-top: 30px;">
+                <h2>Message History</h2>
+                <div id="messageHistory">
+                    <!-- Messages will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Tab -->
+        <div id="messages" class="tab-content">
+            <div class="detail-panel">
+                <h2>Recent Messages</h2>
+
+                <div style="margin-bottom: 20px;">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" onclick="filterMessages('all')">All</button>
+                        <button class="filter-tab" onclick="filterMessages('pending')">Pending Review</button>
+                        <button class="filter-tab" onclick="filterMessages('sent')">Sent</button>
+                        <button class="filter-tab" onclick="filterMessages('replied')">Replied</button>
+                    </div>
+                </div>
+
+                <div id="messagesContainer">
+                    <!-- Messages will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="settings-grid">
+                <!-- Facebook Credentials -->
+                <div class="setting-group">
+                    <h3>🔐 Facebook Credentials</h3>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                        <div class="setting-label">
+                            <div class="name">Email</div>
+                            <div class="description">Your Facebook account email</div>
+                        </div>
+                        <input type="email" id="fbEmail" value="your_email@example.com" placeholder="Email" style="width: 100%; max-width: 400px;">
+                    </div>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Password</div>
+                            <div class="description">Your Facebook password (encrypted)</div>
+                        </div>
+                        <input type="password" id="fbPassword" placeholder="••••••••••" style="width: 100%; max-width: 400px;">
+                    </div>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">2FA Backup Code</div>
+                            <div class="description">For automated 2FA handling (optional)</div>
+                        </div>
+                        <input type="password" id="fb2FA" placeholder="Backup code" style="width: 100%; max-width: 400px;">
+                    </div>
+                </div>
+
+                <!-- AI Providers -->
+                <div class="setting-group">
+                    <h3>🤖 AI Provider Keys</h3>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                        <div class="setting-label">
+                            <div class="name">Vision Provider</div>
+                            <div class="description">For image condition analysis</div>
+                        </div>
+                        <select id="visionProvider" style="width: 100%; max-width: 400px;">
+                            <option>OpenAI (GPT-4 Vision)</option>
+                            <option>Anthropic (Claude 3.5 Sonnet)</option>
+                        </select>
+                    </div>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">OpenAI API Key</div>
+                            <div class="description">sk-xxxxxxxxxxxxxxxx</div>
+                        </div>
+                        <input type="password" id="openaiKey" placeholder="sk-..." style="width: 100%; max-width: 400px;">
+                    </div>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Anthropic API Key</div>
+                            <div class="description">sk-ant-xxxxxxxxxxxxxxxx</div>
+                        </div>
+                        <input type="password" id="anthropicKey" placeholder="sk-ant-..." style="width: 100%; max-width: 400px;">
+                    </div>
+                </div>
+
+                <!-- Scraping Settings -->
+                <div class="setting-group">
+                    <h3>🔄 Scraping Settings</h3>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                        <div class="setting-label">
+                            <div class="name">Check Interval</div>
+                            <div class="description">How often to check for new listings</div>
+                        </div>
+                        <div class="input-wrapper" style="width: 100%; max-width: 400px;">
+                            <input type="number" id="checkInterval" value="15" min="5" max="60">
+                            <small>minutes</small>
+                        </div>
+                    </div>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Comparable Listings Count</div>
+                            <div class="description">Number of market comparables to analyze</div>
+                        </div>
+                        <input type="number" id="comparableCount" value="18" min="5" max="50" style="width: 100%; max-width: 400px;">
+                    </div>
+                </div>
+
+                <!-- Offer Settings -->
+                <div class="setting-group">
+                    <h3>💰 Offer Settings</h3>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                        <div class="setting-label">
+                            <div class="name">Aggressiveness</div>
+                            <div class="description">How aggressive offers should be (0.5 = less, 1.5 = more)</div>
+                        </div>
+                        <input type="number" id="aggressiveness" value="1.0" step="0.1" min="0.5" max="1.5" style="width: 100%; max-width: 400px;">
+                    </div>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Minimum Floor (%)</div>
+                            <div class="description">Never offer below this % of asking price</div>
+                        </div>
+                        <div class="input-wrapper" style="width: 100%; max-width: 400px;">
+                            <input type="number" id="minFloor" value="40" min="20" max="80">
+                            <small>%</small>
+                        </div>
+                    </div>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start; margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Absolute Minimum</div>
+                            <div class="description">Lowest offer amount in dollars</div>
+                        </div>
+                        <div class="input-wrapper" style="width: 100%; max-width: 400px;">
+                            <input type="number" id="absMinimum" value="5" min="1" max="100">
+                            <small>$</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messenger Settings -->
+                <div class="setting-group">
+                    <h3>💬 Messenger Settings</h3>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                        <div class="setting-label">
+                            <div class="name">Daily Message Cap</div>
+                            <div class="description">Maximum messages to send per day</div>
+                        </div>
+                        <input type="number" id="dailyCap" value="20" min="1" max="100" style="width: 100%; max-width: 400px;">
+                    </div>
+                    <div class="setting-item" style="margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Auto-Send Enabled</div>
+                            <div class="description">Automatically send offers without approval</div>
+                        </div>
+                        <button class="toggle" id="autoSendToggle" onclick="this.classList.toggle('active')"></button>
+                    </div>
+                    <div class="setting-item" style="margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Human Review Queue</div>
+                            <div class="description">Require manual approval before sending</div>
+                        </div>
+                        <button class="toggle active" id="reviewToggle" onclick="this.classList.toggle('active')"></button>
+                    </div>
+                </div>
+
+                <!-- Message Generation -->
+                <div class="setting-group">
+                    <h3>✍️ Message Generation</h3>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                        <div class="setting-label">
+                            <div class="name">Tone</div>
+                            <div class="description">Message writing style</div>
+                        </div>
+                        <select id="messageTone" style="width: 100%; max-width: 400px;">
+                            <option>Casual</option>
+                            <option>Semi-formal</option>
+                        </select>
+                    </div>
+                    <div class="setting-item" style="margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Mention Comparables</div>
+                            <div class="description">Reference market prices in offers</div>
+                        </div>
+                        <button class="toggle active" id="mentionCompsToggle" onclick="this.classList.toggle('active')"></button>
+                    </div>
+                    <div class="setting-item" style="margin-top: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Mention Condition Issues</div>
+                            <div class="description">Reference damage as reason for offer</div>
+                        </div>
+                        <button class="toggle active" id="mentionConditionToggle" onclick="this.classList.toggle('active')"></button>
+                    </div>
+                </div>
+
+                <!-- Scheduler -->
+                <div class="setting-group">
+                    <h3>⏱️ Scheduler</h3>
+                    <div class="setting-item" style="margin-bottom: 15px;">
+                        <div class="setting-label">
+                            <div class="name">Scheduler Enabled</div>
+                            <div class="description">Run periodic tasks automatically</div>
+                        </div>
+                        <button class="toggle active" id="schedulerToggle" onclick="this.classList.toggle('active')"></button>
+                    </div>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                        <div class="setting-label">
+                            <div class="name">Timezone</div>
+                            <div class="description">Your local timezone for scheduling</div>
+                        </div>
+                        <select id="timezone" style="width: 100%; max-width: 400px;">
+                            <option>America/New_York</option>
+                            <option>America/Chicago</option>
+                            <option>America/Denver</option>
+                            <option>America/Los_Angeles</option>
+                            <option>Europe/London</option>
+                            <option>Europe/Paris</option>
+                            <option>Asia/Tokyo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Logging -->
+                <div class="setting-group">
+                    <h3>📋 Logging</h3>
+                    <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                        <div class="setting-label">
+                            <div class="name">Log Level</div>
+                            <div class="description">Detail level for logs</div>
+                        </div>
+                        <select id="logLevel" style="width: 100%; max-width: 400px;">
+                            <option>DEBUG</option>
+                            <option selected>INFO</option>
+                            <option>WARNING</option>
+                            <option>ERROR</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Save Settings -->
+                <div class="setting-group">
+                    <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="saveAllSettings()">💾 Save All Settings</button>
+                    <button class="btn btn-secondary" style="width: 100%;" onclick="resetToDefaults()">↻ Reset to Defaults</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>🔒 <strong>Security Notice:</strong> All credentials are encrypted and stored locally. Never share your API keys or passwords.</p>
+        <p style="margin-top: 10px;">v1.0.0 • <a href="#">Documentation</a> • <a href="#">GitHub</a> • <a href="#">Support</a></p>
+    </footer>
+
+    <script>
+        // Sample data
+        const sampleListings = [
+            {
+                id: '#ML-2024-001',
+                title: 'iPhone 14 Pro - Space Black',
+                askingPrice: 899,
+                fairValue: 750,
+                condition: 'Excellent',
+                conditionScore: 92,
+                status: 'Good Deal',
+                age: '3 days',
+                seller: 'John D.',
+                rating: 4.8,
+                reviews: 23,
+                images: 4,
+                damage: 'None detected'
+            },
+            {
+                id: '#ML-2024-002',
+                title: 'MacBook Air M1 13" - Silver',
+                askingPrice: 1200,
+                fairValue: 950,
+                condition: 'Good',
+                conditionScore: 85,
+                status: 'Fair',
+                age: '7 days',
+                seller: 'Sarah M.',
+                rating: 4.7,
+                reviews: 18,
+                images: 6,
+                damage: 'Minor keyboard wear'
+            },
+            {
+                id: '#ML-2024-003',
+                title: 'Sony A6400 Camera + 18-135mm Lens',
+                askingPrice: 1450,
+                fairValue: 1100,
+                condition: 'Excellent',
+                conditionScore: 94,
+                status: 'Steal',
+                age: '1 day',
+                seller: 'Mike T.',
+                rating: 4.9,
+                reviews: 15,
+                images: 8,
+                damage: 'None detected'
+            },
+            {
+                id: '#ML-2024-004',
+                title: 'Herman Miller Aeron Chair - Black',
+                askingPrice: 1350,
+                fairValue: 900,
+                condition: 'Fair',
+                conditionScore: 65,
+                status: 'Overpriced',
+                age: '21 days',
+                seller: 'Lisa K.',
+                rating: 4.5,
+                reviews: 12,
+                images: 5,
+                damage: 'Fabric fading, mechanical wear'
+            }
+        ];
+
+        const sampleMessages = [
+            {
+                type: 'outgoing',
+                item: 'MacBook Air',
+                seller: 'Sarah M.',
+                message: 'Hi! Interested in your MacBook. It looks well-maintained. Would you take $950 for it?',
+                time: '2 hours ago',
+                status: 'sent'
+            },
+            {
+                type: 'reply',
+                item: 'iPhone',
+                seller: 'John D.',
+                message: 'Can you do $750? I need it by end of week.',
+                time: '1 hour ago',
+                status: 'replied'
+            },
+            {
+                type: 'outgoing',
+                item: 'Camera',
+                seller: 'Mike T.',
+                message: 'Love your camera setup! The condition looks perfect. I\'m ready to move fast. What\'s your lowest for $1,100?',
+                time: 'Pending Review',
+                status: 'pending'
+            }
+        ];
+
+        // Initialize
+        function initializeDashboard() {
+            populateListingsTable();
+            populateAllListingsTable();
+            populateMessages();
+            loadSettings();
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.nav-tab');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Populate listings table
+        function populateListingsTable() {
+            const tbody = document.getElementById('listingsTableBody');
+            tbody.innerHTML = sampleListings.map(listing => `
+                <tr>
+                    <td class="item-name">${listing.title}</td>
+                    <td class="price">$${listing.askingPrice}</td>
+                    <td class="price">$${listing.fairValue}</td>
+                    <td><span class="badge badge-${listing.condition.toLowerCase()}">${listing.condition}</span></td>
+                    <td><span class="badge badge-${listing.status.toLowerCase().replace(' ', '-')}">${listing.status}</span></td>
+                    <td>${listing.age}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary btn-small" onclick="showDetailView('${listing.id}')">Offer</button>
+                            <button class="btn btn-secondary btn-small" onclick="showDetailView('${listing.id}')">View</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Populate all listings table
+        function populateAllListingsTable() {
+            const tbody = document.getElementById('allListingsTableBody');
+            tbody.innerHTML = sampleListings.map(listing => `
+                <tr>
+                    <td>${listing.id}</td>
+                    <td class="item-name">${listing.title}</td>
+                    <td>${listing.seller}</td>
+                    <td class="price">$${listing.askingPrice}</td>
+                    <td>${listing.age}</td>
+                    <td>${listing.images} images</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary btn-small" onclick="showDetailView('${listing.id}')">Details</button>
+                            <button class="btn btn-primary btn-small" onclick="analyzeItem('${listing.id}')">Analyze</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Populate messages
+        function populateMessages() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = sampleMessages.map(msg => `
+                <div class="message-item ${msg.type === 'reply' ? 'seller' : 'bot'}">
+                    <div class="message-header">
+                        <span class="message-sender">${msg.type === 'reply' ? '📥 Reply' : '📤 Outgoing'} ${msg.type === 'reply' ? 'from' : 'to'} ${msg.seller} - ${msg.item}</span>
+                        <span class="message-time">${msg.time}${msg.status === 'pending' ? ' ⏳ Pending Review' : ''}</span>
+                    </div>
+                    <div class="message-content">${msg.message}</div>
+                    ${msg.status === 'pending' ? `
+                        <div class="message-actions">
+                            <button class="btn btn-primary btn-small" onclick="approveMessage()">Approve & Send</button>
+                            <button class="btn btn-secondary btn-small" onclick="editMessage()">Edit</button>
+                            <button class="btn btn-secondary btn-small" onclick="discardMessage()">Discard</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Filter listings
+        function filterListings() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#listingsTableBody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        // Filter all listings
+        function filterAllListings() {
+            const searchTerm = document.getElementById('searchListingsInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#allListingsTableBody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        // Filter messages
+        function filterMessages(type) {
+            const tabs = document.querySelectorAll('.filter-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const messages = document.querySelectorAll('.message-item');
+            messages.forEach(msg => {
+                if (type === 'all') {
+                    msg.style.display = '';
+                } else if (type === 'pending' && msg.textContent.includes('Pending Review')) {
+                    msg.style.display = '';
+                } else if (type === 'sent' && !msg.textContent.includes('Pending Review') && msg.classList.contains('bot')) {
+                    msg.style.display = '';
+                } else if (type === 'replied' && msg.classList.contains('seller')) {
+                    msg.style.display = '';
+                } else {
+                    msg.style.display = 'none';
+                }
+            });
+        }
+
+        // Actions
+        function showDetailView(listingId) {
+            switchTab('detail');
+            const listing = sampleListings.find(l => l.id === listingId);
+            if (listing) {
+                document.getElementById('detailItemName').textContent = listing.title;
+                document.getElementById('detailSeller').textContent = `${listing.seller} • ${listing.rating} stars (${listing.reviews} reviews)`;
+                document.getElementById('detailPosted').textContent = listing.age;
+                document.getElementById('detailConditionGrade').textContent = listing.condition;
+                document.getElementById('detailConditionScore').textContent = `${listing.conditionScore}/100`;
+                document.getElementById('detailDamage').textContent = listing.damage;
+                document.getElementById('breakdownAskingPrice').textContent = `$${listing.askingPrice}.00`;
+                document.getElementById('breakdownFairValue').textContent = `$${listing.fairValue}.00`;
+            }
+        }
+
+        function analyzeItem(listingId) {
+            alert(`Analyzing item ${listingId}...`);
+        }
+
+        function sendOffer() {
+            alert('Offer sent! Waiting for seller response...');
+        }
+
+        function startNewSearch() {
+            const url = prompt('Enter Facebook Marketplace search URL:');
+            if (url) alert(`Scraping from: ${url}`);
+        }
+
+        function exportListings() {
+            alert('Exporting listings as CSV...');
+        }
+
+        function approveMessage() {
+            alert('Message approved and sent!');
+            populateMessages();
+        }
+
+        function editMessage() {
+            const newMessage = prompt('Edit message:');
+            if (newMessage) alert('Message updated');
+        }
+
+        function discardMessage() {
+            alert('Message discarded');
+            populateMessages();
+        }
+
+        function filterByRecent() {
+            alert('Filtering by recent...');
+        }
+
+        function filterByValue() {
+            alert('Filtering by high value...');
+        }
+
+        function filterByDeals() {
+            alert('Filtering by deals...');
+        }
+
+        // Settings
+        function saveAllSettings() {
+            const settings = {
+                fbEmail: document.getElementById('fbEmail').value,
+                fbPassword: document.getElementById('fbPassword').value,
+                visionProvider: document.getElementById('visionProvider').value,
+                openaiKey: document.getElementById('openaiKey').value,
+                anthropicKey: document.getElementById('anthropicKey').value,
+                checkInterval: document.getElementById('checkInterval').value,
+                comparableCount: document.getElementById('comparableCount').value,
+                aggressiveness: document.getElementById('aggressiveness').value,
+                minFloor: document.getElementById('minFloor').value,
+                absMinimum: document.getElementById('absMinimum').value,
+                dailyCap: document.getElementById('dailyCap').value,
+                messageTone: document.getElementById('messageTone').value,
+                timezone: document.getElementById('timezone').value,
+                logLevel: document.getElementById('logLevel').value
+            };
+            localStorage.setItem('fbmSettings', JSON.stringify(settings));
+            alert('✅ Settings saved successfully!');
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('fbmSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                Object.keys(settings).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) element.value = settings[key];
+                });
+            }
+        }
+
+        function resetToDefaults() {
+            if (confirm('Reset all settings to defaults?')) {
+                localStorage.removeItem('fbmSettings');
+                location.reload();
+            }
+        }
+
+        // Initialize on load
+        window.onload = initializeDashboard;
+    </script>
+</body>
+</html>
